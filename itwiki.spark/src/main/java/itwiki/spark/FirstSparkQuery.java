@@ -8,21 +8,28 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
-public class Sparkalo {
+public class FirstSparkQuery {
 
 	public static void main(String[] args) {
 
 		File out = new File("RISULTATISPARK");
-		writeOnFile("Autore" +"\t" + "Categoria"+"\t"+"Num modifiche", out);
-		
-		SparkSession sparkSession = SparkSession.builder().appName("Simple Application").getOrCreate();
+		writeOnFile("Autore" + "\t" + "Categoria" + "\t" + "Num modifiche", out);
+
+		SparkSession sparkSession = SparkSession.builder().appName("Simple Application").enableHiveSupport()
+				.getOrCreate();
 		JavaSparkContext context = new JavaSparkContext(sparkSession.sparkContext());
 
-		JavaPairRDD<String, String> pairs = context.textFile("author", 1)
-				.mapToPair(row -> new Tuple2<String, String>(row.split("\t")[4], row.split("\t")[2]));
+		JavaPairRDD<String, String> pairs = sparkSession.sql("select * from default.lastauthor").toJavaRDD()
+				.mapToPair(row -> new Tuple2<String, String>(row.get(4).toString(), row.get(2).toString()));
+		//
+		// JavaPairRDD<String, String> pairs = context.textFile("author", 1)
+		// .mapToPair(row -> new Tuple2<String, String>(row.split("\t")[4],
+		// row.split("\t")[2]));
 
 		for (Tuple2<String, Iterable<String>> author : pairs.groupByKey().collect()) {
 			List<Tuple2<String, Integer>> tuplesToCount = new ArrayList<Tuple2<String, Integer>>();
@@ -37,7 +44,7 @@ public class Sparkalo {
 		context.close();
 		sparkSession.stop();
 	}
-	
+
 	static void writeOnFile(String resultsSingleRow, File out) {
 
 		FileWriter fw;
