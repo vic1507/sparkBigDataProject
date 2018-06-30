@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
@@ -17,10 +15,13 @@ public class FirstSparkQuery {
 
 	public static void main(String[] args) {
 
-		File out = new File("RISULTATISPARK");
+		File out = new File("FirstQueryResults.csv");
 		writeOnFile("Autore" + "\t" + "Categoria" + "\t" + "Num modifiche", out);
 
-		SparkSession sparkSession = SparkSession.builder().appName("Simple Application").enableHiveSupport()
+		SparkSession sparkSession = SparkSession
+				.builder()
+				.appName("First Spark Query")
+				.enableHiveSupport()
 				.getOrCreate();
 		JavaSparkContext context = new JavaSparkContext(sparkSession.sparkContext());
 
